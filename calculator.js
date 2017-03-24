@@ -1,31 +1,35 @@
 $(document).ready(function(){
 
     var sum = 0;
-    var command = "";
+    var command = "start";
     var storedCommand;
     var number = [];
-
+    var decimalMode = false;
+    var decimalFactor = .1;
 
     var total = document.getElementById("result");
 
     //condense these buttons to an Object full of buttons
     var addButton = document.getElementById("add");
-    addButton.onclick = function() { addCommand(add); hit(); };
+    addButton.onclick = function() { addCommand(add); };
 
     var multiplyButton = document.getElementById("multiply");
-    multiplyButton.onclick = function() { addCommand(multiply);hit();  };
+    multiplyButton.onclick = function() { addCommand(multiply); };
 
     var subtractButton = document.getElementById("subtract");
-    subtractButton.onclick = function() { addCommand(subtract); hit(); };
+    subtractButton.onclick = function() { addCommand(subtract);  };
 
     var divideButton = document.getElementById("divide");
-    divideButton.onclick = function() { addCommand(divide); hit(); };
+    divideButton.onclick = function() { addCommand(divide);  };
 
     var modButton = document.getElementById("mod");
-    modButton.onclick = function() { addCommand(mod); hit(); };
+    modButton.onclick = function() { addCommand(mod);  };
+
+    var decimalButton = document.getElementById("decimal");
+    decimalButton.onclick = function() { turnDecimalModeOn();  };
 
     var clearButton = document.getElementById("clear");
-    clearButton.onclick = function() { clearAll(); displayTotal(0);hit();  };
+    clearButton.onclick = function() { clearAll(); displayTotal(0);  };
 
     var totalButton = document.getElementById("equals");
     totalButton.onclick = equals;
@@ -61,10 +65,6 @@ $(document).ready(function(){
     zeroButton.onclick = function() { getNumber(0); };
 
 
-    function hit() {
-        console.log("hit");
-
-    }
     //retrieves number based on button pushed and displays number
     function getNumber(num) {
 
@@ -79,60 +79,65 @@ $(document).ready(function(){
             sum = num;
         }
         else {
-            sum = (sum * 10);
+            if (decimalMode === false) {
+                sum = (sum * 10);
 
-            if (num !== 0) {
-                sum += num;
+                if (num !== 0) {
+                    sum += num;
+                }
+            }
+            else {
+                sum += num * decimalFactor;
+                decimalFactor = decimalFactor * .1;
             }
         }
-
         displayTotal(sum);
     }
 
     //stores selected number to be used in calculation
     function storeNumber() {
-
-        tallyNum += sum;
-        /*
-        nums.push(sum);
-        clearSum();
-        */
-    }
-
-    function storeFirstNumber() {
         //number[0] += sum;
         number.push(sum);
         clearSum();
+        resetDecimalMode();
     }
 
-    function storeSecondNumber() {
-        //number[1] += sum;
-        number.push(sum);
-        clearSum();
+    function turnDecimalModeOn() {
+        decimalMode = true;
+    }
+
+    function resetDecimalMode() {
+        decimalMode = false;
+        decimalFactor = .1;
     }
 
     function addCommand(mathCommand) {
 
         if (number.length === 0) {
-            storeFirstNumber(); //stores first number
-            command = mathCommand;
-           // displayTotal(number[0]);
+
+            if (command == "start" || command == "clear") {
+                storeNumber(); //stores first number
+                command = mathCommand;
+            }
         }
         else if (number.length === 1) {
 
-            storeSecondNumber();
+            if (command == "start" || command == "clear") {
+                storeNumber();
+            }
             var result;
             if (command !== "clear") {
                 result = command();
             }
             else {
-                console.log("clear");
                 result = number[0];
             }
 
-            displayTotal(result); //computes 2 numbers
-            resetNumbersForChain(result);
-            command = mathCommand;
+            if (command == "start" || command == "clear") {
+                displayTotal(result); //computes 2 numbers
+                resetNumbersForChain(result);
+                command = mathCommand;
+            }
         }
     }
 
@@ -140,69 +145,29 @@ $(document).ready(function(){
     function resetNumbersForChain(total) {
         number.pop()
         number[0] = total;
-        //sum = total;
     }
 
     function equals() {
-        //number += sum;
-        storeSecondNumber();
-
         if (command !== "clear") {
+
+            storeNumber();
+
             var result = command();
             displayTotal(result); //computes 2 numbers
             resetNumbersForChain(result);
+
             storedCommand = command;
+
             clearMathCommand();
         }
-        //displayTotal(number[0] );
-       // clearEnd();
-    }
-
-     function clearEnd() {
-
 
     }
-    //computes numbers based on command
-    function computeTotal() {
-        storeFirstNumber(); //stores 2nd number to be computed
-        displayTotal(compute());
-        clearEnd();
-        //clearAll();
-        //console.log(f);
-    }
-
 
     function clearMathCommand() {
         command = "clear";
     }
 
-    /*
-    function compute(mathCommand) {
-        //clearMathCommand();
-        return mathCommand();
-        /*
-        switch (command) {
-            case "mu":
-                return multiply(nums[0],nums[1]);
-            case "a":
-                return add(nums[0],nums[1]);
-            case "s":
-                return subtract(nums[0],nums[1]);
-            case "d":
-                return divide(nums[0],nums[1]);
-            case "mo":
-                return mod(nums[0],nums[1]);
-            default:
-                return;
-
-            //do nothing
-        }
-
-
-    }*/
-
     function multiply() {
-        console.log(number[0] + " * " + number[1]);
         return number[0] * number[1];
     }
 
@@ -211,7 +176,6 @@ $(document).ready(function(){
     }
 
     function add(){
-        //console.log(num01 + num02);
         return number[0] + number[1];
     }
 
@@ -235,7 +199,7 @@ $(document).ready(function(){
         clearSum();
         clearMathCommand();
         number.length = 0;
-
+        resetDecimalMode();
     }
 
 
